@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+@import 'tailwindcss';
+
+:root {
+  /* Surfaces */
+  --canvas: #EDF1F7;
+  --surface: #FFFFFF;
+  --surface-2: #F4F7FC;
+  --hairline: #DDE4EE;
+  --hairline-strong: #BCC8D8;
+
+  /* Accent — calm blue */
+  --accent: #2E69E0;
+  --accent-hover: #2255C4;
+  --accent-light: #E8F0FE;
+  --accent-fg: #FFFFFF;
+
+  /* Navy family — mapped to accent scale */
+  --navy-900: #1B2B40;
+  --navy-800: #243650;
+  --navy-700: var(--accent);
+  --navy-600: var(--accent-hover);
+  --navy-100: var(--accent-light);
+
+  /* Sidebar */
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: var(--hairline);
+  --sidebar-active-bg: var(--accent-light);
+  --sidebar-active-text: var(--accent);
+  --sidebar-text: #3D4F64;
+  --sidebar-muted: #8EA4B8;
+
+  /* Ink */
+  --ink: #1A2535;
+  --ink-2: #4B6070;
+  --ink-3: #8EA4B5;
+  --ink-inv: #FFFFFF;
+
+  /* Brass — verified provenance only */
+  --brass: #8A6A28;
+  --brass-soft: #C9A961;
+  --brass-bg: #F7F2E6;
+
+  /* Status */
+  --ok: #14603F;
+  --ok-bg: #EDFAF3;
+  --ok-border: #A3D9BC;
+  --warn: #7A5410;
+  --warn-bg: #FFF8ED;
+  --warn-border: #F5C36A;
+  --danger: #8C2222;
+  --danger-bg: #FEF2F0;
+  --danger-border: #F4B8B0;
+
+  /* Relevance density */
+  --rel-95: #1B3A6B;
+  --rel-80: #2255A4;
+  --rel-60: #3D78CC;
+  --rel-40: #7AABDD;
+  --rel-20: #B6CEE8;
+
+  /* Legacy aliases — keep existing inline styles working */
+  --background: var(--canvas);
+  --navy: var(--accent);
+  --navy-fg: var(--accent-fg);
+  --navy-hover: var(--accent-hover);
+  --rel-90: var(--rel-95);
+  --rel-70: var(--rel-80);
+  --rel-50: var(--rel-60);
+  --rel-30: var(--rel-20);
+  --link: var(--accent);
+  --badge-bg: var(--surface-2);
+
+  /* Radius scale */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  /* Fonts */
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'Source Serif 4', Georgia, serif;
+  --sans: 'Inter', system-ui, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus rings */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Input focus ring — 1px navy-600 border + 2px navy-100 outer ring */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+/* Loading bar */
+@keyframes loadbar {
+  from { transform: scaleX(0.05); transform-origin: left; }
+  to   { transform: scaleX(1);    transform-origin: left; }
+}
+
+/* Stagger fade-in for result lists */
+@keyframes rowrise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.row-stagger > * {
+  animation: rowrise 160ms ease-out both;
+}
+.row-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.row-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.row-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.row-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.row-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.row-stagger > *:nth-child(6) { animation-delay: 200ms; }
+.row-stagger > *:nth-child(7) { animation-delay: 240ms; }
+.row-stagger > *:nth-child(8) { animation-delay: 280ms; }
+.row-stagger > *:nth-child(9) { animation-delay: 320ms; }
+.row-stagger > *:nth-child(10) { animation-delay: 360ms; }
+.row-stagger > *:nth-child(n+11) { animation-delay: 400ms; }
+
+/* Relevance bar fill animation */
+@keyframes relbar {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+.rel-bar {
+  animation: relbar 400ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-stagger > * { animation: none; }
+  .rel-bar { animation: none; }
+  @keyframes loadbar { from { transform: scaleX(1); } }
+}
+
+/* Hide scrollbar by default */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+body:hover::-webkit-scrollbar-thumb { background: var(--hairline); }

@@ -1,0 +1,10 @@
+{
+  "description": "Enables users to perform semantic and keyword searches on official documents with filters and relevance-ranked results for precise information retrieval.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
