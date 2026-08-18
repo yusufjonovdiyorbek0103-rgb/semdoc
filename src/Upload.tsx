@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, CSSProperties } from 'react'
 import { processDocument, getStats } from './lib/documents'
+import { extractTextFromPdf } from './lib/pdf'
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
@@ -647,10 +648,11 @@ export default function Upload({ onNav }: { onNav?: (screen: string) => void }) 
       setJobs(prev => [job, ...prev])
 
       try {
-        const text = await file.text()
+        const isPdf = file.name.toLowerCase().endsWith('.pdf')
+        const text = isPdf ? await extractTextFromPdf(file) : await file.text()
         if (!text.trim()) {
           setJobs(prev => prev.map(j => j.file === file ? {
-            ...j, status: 'error' as RowStatus, error: 'Faylda matn topilmadi',
+            ...j, status: 'error' as RowStatus, error: isPdf ? 'PDF dan matn ajratib bo\'linmadi. OCR kerak bo\'lishi mumkin.' : 'Faylda matn topilmadi',
             stages: jobToStages('upload', 'error'),
           } : j))
           continue
