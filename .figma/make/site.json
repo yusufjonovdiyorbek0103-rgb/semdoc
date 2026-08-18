@@ -1,7 +1,9 @@
 {
-  "description": "Enables users to perform semantic and keyword searches on official documents with filters and relevance-ranked results for precise information retrieval.",
+  "title": "SEMDOC — Semantik tahlil tizimi",
+  "description": "Rasmiy hujjatlarni semantik va kalit so'z bo'yicha qidirish, AI xulosa va tahlil tizimi.",
+  "language": "uz",
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,
