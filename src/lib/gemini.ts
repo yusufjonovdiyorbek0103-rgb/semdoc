@@ -3,13 +3,14 @@ const BASE = 'https://generativelanguage.googleapis.com/v1beta'
 
 export async function getEmbedding(text: string): Promise<number[]> {
   const res = await fetch(
-    `${BASE}/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-embedding-001:embedContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'models/text-embedding-004',
+        model: 'models/gemini-embedding-001',
         content: { parts: [{ text }] },
+        outputDimensionality: 768,
       }),
     }
   )
@@ -20,14 +21,15 @@ export async function getEmbedding(text: string): Promise<number[]> {
 
 export async function getEmbeddings(texts: string[]): Promise<number[][]> {
   const res = await fetch(
-    `${BASE}/models/text-embedding-004:batchEmbedContents?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-embedding-001:batchEmbedContents?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         requests: texts.map(text => ({
-          model: 'models/text-embedding-004',
+          model: 'models/gemini-embedding-001',
           content: { parts: [{ text }] },
+          outputDimensionality: 768,
         })),
       }),
     }
@@ -46,7 +48,7 @@ export async function chatWithDocs(
     .join('\n\n---\n\n')
 
   const res = await fetch(
-    `${BASE}/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,7 +90,7 @@ export async function classifyDocument(text: string): Promise<{
   reason: string
 }> {
   const res = await fetch(
-    `${BASE}/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -127,7 +129,7 @@ ${text.slice(0, 2000)}`
 
 export async function summarizeDocument(text: string): Promise<string> {
   const res = await fetch(
-    `${BASE}/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
