@@ -48,7 +48,7 @@ export async function chatWithDocs(
     .join('\n\n---\n\n')
 
   const res = await fetch(
-    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -90,7 +90,7 @@ export async function classifyDocument(text: string): Promise<{
   reason: string
 }> {
   const res = await fetch(
-    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -129,7 +129,7 @@ ${text.slice(0, 2000)}`
 
 export async function summarizeDocument(text: string): Promise<string> {
   const res = await fetch(
-    `${BASE}/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
+    `${BASE}/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
