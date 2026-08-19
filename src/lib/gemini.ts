@@ -116,6 +116,7 @@ ${text.slice(0, 2000)}`
         generationConfig: {
           temperature: 0.1,
           maxOutputTokens: 512,
+          responseMimeType: 'application/json',
         },
       }),
     }
@@ -123,8 +124,13 @@ ${text.slice(0, 2000)}`
   if (!res.ok) throw new Error(`Classify error: ${res.status}`)
   const data = await res.json()
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
-  const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-  return JSON.parse(cleaned)
+  try {
+    return JSON.parse(raw)
+  } catch {
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (match) return JSON.parse(match[0])
+    return { docType: '', topic: '', department: '', confidence: 50, reason: 'Auto-classified' }
+  }
 }
 
 export async function summarizeDocument(text: string): Promise<string> {
