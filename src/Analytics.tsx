@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react'
 import {
   AreaChart, Area,
   BarChart, Bar, Cell, LabelList,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { getStats } from './lib/documents'
 
 // ── Blue density palette ──────────────────────────────────────────────────────
 
@@ -89,10 +91,14 @@ const STATS = [
   },
 ]
 
-function StatCards() {
+function StatCards({ docCount }: { docCount?: number }) {
+  const displayStats = docCount != null
+    ? STATS.map((s, i) => i === 0 ? { ...s, value: docCount.toLocaleString('uz') } : s)
+    : STATS
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-      {STATS.map((s, i) => (
+      {displayStats.map((s, i) => (
         <div key={i} style={{
           background: 'var(--surface)', border: '1px solid var(--hairline)',
           borderRadius: 4, padding: 16,
@@ -430,6 +436,14 @@ function EmptyQueriesCard() {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function Analytics({ onNav }: { onNav?: (s: string) => void }) {
+  const [docCount, setDocCount] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    getStats().then(s => {
+      if (s?.total_documents) setDocCount(s.total_documents)
+    }).catch(() => {})
+  }, [])
+
   return (
     <div style={{ background: 'var(--canvas)' }}>
       <div style={{ padding: '28px 32px 48px' }}>
@@ -473,7 +487,7 @@ export default function Analytics({ onNav }: { onNav?: (s: string) => void }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
           {/* Row 1 */}
-          <StatCards />
+          <StatCards docCount={docCount} />
 
           {/* Row 2 */}
           <FlowChart />

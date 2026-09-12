@@ -221,10 +221,14 @@ function ResultCard({ result, onTitleClick, selected, onSelect }: {
 
         {/* Bottom links */}
         <div style={{ display: 'flex', gap: 16, marginTop: 2 }}>
-          {['Hujjatni ochish', "O'xshash hujjatlar (4)", 'AI xulosa'].map(label => (
+          {[
+            { label: 'Hujjatni ochish', action: 'detail' },
+            { label: "O'xshash hujjatlar", action: 'duplicates' },
+            { label: 'AI savol berish', action: 'ai' },
+          ].map(btn => (
             <button
-              key={label}
-              onClick={e => e.stopPropagation()}
+              key={btn.label}
+              onClick={e => { e.stopPropagation(); if (btn.action === 'detail') onTitleClick?.(); else if (btn.action === 'ai' || btn.action === 'duplicates') { /* handled by parent */ } }}
               style={{
                 fontFamily: 'var(--sans)',
                 fontSize: 12,
@@ -238,7 +242,7 @@ function ResultCard({ result, onTitleClick, selected, onSelect }: {
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
             >
-              {label}
+              {btn.label}
             </button>
           ))}
         </div>
@@ -306,7 +310,7 @@ export default function App() {
   const [showAudit, setShowAudit] = useState(false)
   const [detailFromAiChat, setDetailFromAiChat] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | undefined>()
   const triggerLoad = () => {
     setIsLoading(true)
     setTimeout(() => setIsLoading(false), 380)
@@ -354,18 +358,20 @@ export default function App() {
 
   const results = searchResults
 
-  const handleSearch = async () => {
-    if (!query.trim()) {
+  const handleSearch = async (searchQuery?: string) => {
+    const q = searchQuery ?? query
+    if (!q.trim()) {
       setHasSearched(false)
       setNoResults(false)
       return
     }
+    if (searchQuery) setQuery(searchQuery)
     setSearching(true)
     setHasSearched(true)
     setNoResults(false)
     setSelectedCard(null)
     try {
-      const { results: apiResults, duration } = await searchDocuments(query)
+      const { results: apiResults, duration } = await searchDocuments(q)
       setSearchDuration(duration)
       if (apiResults.length === 0) {
         setNoResults(true)
@@ -392,7 +398,7 @@ export default function App() {
         setSearchResults(mapped)
         if (mapped.length > 0) setSelectedCard(0)
       }
-      setRecentQueries(prev => [query, ...prev.filter(q => q !== query)].slice(0, 5))
+      setRecentQueries(prev => [q, ...prev.filter(x => x !== q)].slice(0, 5))
     } catch (err) {
       console.error('Search error:', err)
       setNoResults(true)
@@ -673,7 +679,7 @@ export default function App() {
               {RECENT_QUERIES.map((q, i) => (
                 <button
                   key={i}
-                  onClick={() => {}}
+                  onClick={() => { handleNavKey('search'); handleSearch(q) }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     width: '100%', height: 32, padding: '0 10px',
@@ -715,7 +721,7 @@ export default function App() {
                 INDEKSLANGAN HUJJATLAR
               </div>
               <div style={{ fontFamily: 'var(--mono)', fontSize: 22, color: 'var(--ink)', lineHeight: 1, letterSpacing: '0', marginBottom: 10 }}>
-                12{' '}428
+                {docCount > 0 ? docCount.toLocaleString('uz') : '0'}
               </div>
               {/* Progress track */}
               <div style={{ height: 4, background: 'var(--canvas)', borderRadius: 'var(--r-pill)', marginBottom: 6, overflow: 'hidden', border: '1px solid var(--hairline)' }}>
@@ -790,7 +796,7 @@ export default function App() {
           {showEval && <Evaluation onNav={handleNavKey} />}
           {showUpload && <Upload onNav={handleNavKey} />}
           {showAiChat && <AiChat onBack={() => handleNavKey('search')} onNav={handleNavKey} onOpenDoc={handleOpenDocFromAiChat} />}
-          {showDetail && <DocumentDetail onBack={handleDetailBack} onAiChat={() => handleNavKey('ai')} />}
+          {showDetail && <DocumentDetail onBack={handleDetailBack} onAiChat={() => handleNavKey('ai')} documentId={selectedDocumentId} />}
 
           {showSearch && (
             <div
@@ -850,7 +856,7 @@ export default function App() {
                         style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, color: 'var(--ink)', background: 'transparent', fontFamily: 'var(--sans)' }}
                       />
                       <button
-                        onClick={handleSearch}
+                        onClick={() => handleSearch()}
                         style={{
                           height: 36, padding: '0 16px', background: 'var(--navy-700)', color: 'var(--ink-inv)',
                           border: 'none', borderRadius: 'var(--r-sm)', fontSize: 13, fontWeight: 600,
@@ -868,7 +874,7 @@ export default function App() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 11, color: 'var(--ink-3)', fontWeight: 500, letterSpacing: '0.03em' }}>Namuna savollar:</span>
                         {SUGGESTIONS.map(s => (
-                          <button key={s} onClick={() => { setQuery(s); setHasSearched(true); setNoResults(false) }}
+                          <button key={s} onClick={() => handleSearch(s)}
                             style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-2)', background: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: 'var(--r-xs)', padding: '3px 9px', cursor: 'pointer', lineHeight: 1.5 }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--navy-600)'; e.currentTarget.style.color = 'var(--navy-600)' }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--hairline)'; e.currentTarget.style.color = 'var(--ink-2)' }}
@@ -965,7 +971,7 @@ export default function App() {
                                   result={r}
                                   selected={selectedCard === i}
                                   onSelect={showPreview ? () => setSelectedCard(i) : undefined}
-                                  onTitleClick={!showPreview && i === 0 ? () => setShowDetail(true) : undefined}
+                                  onTitleClick={() => { setSelectedDocumentId(r.documentId); setShowDetail(true) }}
                                 />
                               </div>
                             ))}
@@ -979,10 +985,10 @@ export default function App() {
                           <h2 style={{ fontFamily: 'var(--sans)', fontSize: 18, fontWeight: 600, color: 'var(--ink)', margin: '0 0 10px' }}>Hujjat topilmadi</h2>
                           <p style={{ fontSize: 14, color: 'var(--ink-2)', margin: '0 0 20px', lineHeight: 1.6 }}>Savolni boshqacha ifodalab ko'ring yoki filtrlarni kengaytiring.</p>
                           <button
-                            onClick={() => { setHasSearched(true); setNoResults(false); setQuery("ko'chat ekish bo'yicha qanday topshiriqlar berilgan?") }}
+                            onClick={() => handleSearch("ko'chat ekish bo'yicha qanday topshiriqlar berilgan?")}
                             style={{ fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600, color: 'var(--ink-inv)', background: 'var(--navy-700)', border: 'none', borderRadius: 'var(--r-sm)', padding: '8px 18px', cursor: 'pointer' }}
                           >
-                            Filtrlarni tozalash
+                            Namuna qidirish
                           </button>
                         </div>
                       )}
@@ -1065,7 +1071,7 @@ export default function App() {
                               {/* Action buttons */}
                               <div style={{ padding: '14px 16px', display: 'flex', gap: 10 }}>
                                 <button
-                                  onClick={() => setShowDetail(true)}
+                                  onClick={() => { setSelectedDocumentId(r.documentId); setShowDetail(true) }}
                                   style={{ flex: 1, height: 36, background: 'var(--navy-700)', color: 'var(--ink-inv)', border: 'none', borderRadius: 'var(--r-sm)', fontSize: 13, fontWeight: 600, fontFamily: 'var(--sans)', cursor: 'pointer', transition: 'background 0.15s' }}
                                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--navy-600)')}
                                   onMouseLeave={e => (e.currentTarget.style.background = 'var(--navy-700)')}

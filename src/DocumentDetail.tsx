@@ -1,4 +1,5 @@
-import { useState, CSSProperties } from 'react'
+import { useState, useEffect, CSSProperties } from 'react'
+import { getDocument } from './lib/documents'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -73,7 +74,9 @@ function CitationChip({ label }: { label: string }) {
   )
 }
 
-function AiTab() {
+function AiTab({ doc }: { doc?: any }) {
+  const summaryText = doc?.summary || "Farmoyish tuman hokimliklariga 2025-yil 1-apreldan 15-maygacha har bir mahallada kamida 200 tup manzarali daraxt ko'chatini ekishni ta'minlashni topshiradi. Moliyalashtirish tegishli tuman byudjetining «Ko'kalamzorlashtirish» moddasi hisobidan amalga oshirilishi belgilanadi. Ekologiya boshqarmasiga ko'chatlarni vaqtida yetkazib berish va ularning sifatini nazorat qilish majburiyati yuklatiladi."
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Summary card */}
@@ -100,18 +103,14 @@ function AiTab() {
 
         <p style={{
           fontFamily: 'var(--serif)', fontSize: 15, lineHeight: 1.75,
-          color: 'var(--ink)', margin: '0 0 16px',
+          color: 'var(--ink)', margin: '0 0 16px', whiteSpace: 'pre-wrap',
         }}>
-          Farmoyish tuman hokimliklariga 2025-yil 1-apreldan 15-maygacha har bir mahallada kamida 200 tup manzarali daraxt ko'chatini ekishni ta'minlashni topshiradi.<CitationChip label="1-bet" />
-          {' '}Moliyalashtirish tegishli tuman byudjetining «Ko'kalamzorlashtirish» moddasi hisobidan amalga oshirilishi belgilanadi.<CitationChip label="2-bet" />
-          {' '}Ekologiya boshqarmasiga ko'chatlarni vaqtida yetkazib berish va ularning sifatini nazorat qilish majburiyati yuklatiladi.<CitationChip label="2-bet" />
-          {' '}Har bir tuman hokimligi amalga oshirilgan ishlar to'g'risida oyning 5-kuniga qadar shahar hokimligiga hisobot taqdim etishi shart.<CitationChip label="3-bet" />
-          {' '}Ijroni nazorat qilish Toshkent shahar hokimining o'rinbosariga yuklatiladi.<CitationChip label="3-bet" />
+          {summaryText}
         </p>
 
         <div style={{ borderTop: '1px solid var(--hairline)', paddingTop: 12 }}>
           <span style={{ fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-3)' }}>
-            Xulosa hujjatning 1–3-betlaridan avtomatik shakllantirildi. Har bir jumla manbaga bog'langan.
+            Xulosa hujjatning matnidan avtomatik shakllantirildi.
           </span>
         </div>
       </div>
@@ -128,18 +127,16 @@ function AiTab() {
           Ajratilgan atributlar
         </div>
         {[
-          ['Hujjat turi', 'Farmoyish'],
-          ["Ro'yxat raqami", <Mono key="rn">112-F</Mono>],
-          ['Qabul qilingan sana', <Mono key="sana">14.03.2025</Mono>],
-          ['Chiqaruvchi organ', 'Toshkent shahar hokimligi'],
-          ['Imzolagan', "Hokim o'rinbosari"],
-          ['Ijro muddati', <Mono key="muddat">15.05.2025</Mono>],
-          ["Mas'ul bo'limlar", "Tuman hokimliklari, Ekologiya boshqarmasi"],
-          ["Bog'liq hujjatlar", <span key="bj" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--link)', cursor: 'pointer' }}>44-B, 7-Y</span>],
-          ['Mavzu toifasi', 'Ekologiya · Ko\'kalamzorlashtirish'],
+          ['Hujjat turi', doc?.doc_type || 'Farmoyish'],
+          ["Ro'yxat raqami", <Mono key="rn">{doc?.doc_number || '112-F'}</Mono>],
+          ['Qabul qilingan sana', <Mono key="sana">{doc?.date ? new Date(doc.date).toLocaleDateString('uz-Latn') : '14.03.2025'}</Mono>],
+          ['Chiqaruvchi organ', doc?.org || 'Toshkent shahar hokimligi'],
+          ["Mas'ul bo'lim", doc?.department || "Tuman hokimliklari"],
+          ['Mavzu toifasi', doc?.topic || 'Ekologiya · Ko\'kalamzorlashtirish'],
+          ['Holati', doc?.status === 'indexed' ? 'Indekslangan' : doc?.status === 'processing' ? 'Jarayonda' : doc?.status || 'Indekslangan'],
+          ['Chunk soni', <Mono key="cc">{doc?.chunk_count ?? '24'}</Mono>],
           ['Manba fayl', <span key="mf" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Mono key="fn" color="var(--link)">112-F_2025.pdf</Mono>
-            <span key="meta" style={{ fontSize: 11, color: 'var(--ink-3)' }}>· 4 bet · matnli PDF</span>
+            <Mono key="fn" color="var(--link)">{doc?.file_name || '112-F_2025.pdf'}</Mono>
           </span>],
         ].map(([label, value], i, arr) => (
           <div key={i} style={{
@@ -231,7 +228,28 @@ function AiTab() {
 
 // ── Tab 2: Hujjat matni ───────────────────────────────────────────────────────
 
-function TextTab() {
+function TextTab({ doc }: { doc?: any }) {
+  if (doc?.full_text) {
+    const paras = doc.full_text.split(/\n\n+/).filter((p: string) => p.trim())
+    return (
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--hairline)',
+        borderRadius: 4, padding: '28px 32px',
+      }}>
+        <div style={{ maxWidth: '68ch', margin: '0 auto' }}>
+          {paras.map((p: string, i: number) => (
+            <p key={i} style={{
+              fontFamily: 'var(--serif)', fontSize: 15, lineHeight: 1.75,
+              color: 'var(--ink)', margin: '0 0 20px',
+            }}>
+              {p}
+            </p>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const paragraphs = [
     {
       page: '1-bet',
@@ -430,8 +448,19 @@ function RightColumn() {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export default function DocumentDetail({ onBack, onAiChat }: { onBack: () => void; onAiChat?: () => void }) {
+export default function DocumentDetail({ onBack, onAiChat, documentId }: { onBack: () => void; onAiChat?: () => void; documentId?: string }) {
   const [tab, setTab] = useState<Tab>('ai')
+  const [doc, setDoc] = useState<any>(null)
+  const [loadingDoc, setLoadingDoc] = useState(false)
+
+  useEffect(() => {
+    if (!documentId) return
+    setLoadingDoc(true)
+    getDocument(documentId)
+      .then(d => setDoc(d))
+      .catch(() => setDoc(null))
+      .finally(() => setLoadingDoc(false))
+  }, [documentId])
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'ai', label: 'AI xulosa' },
@@ -467,8 +496,16 @@ export default function DocumentDetail({ onBack, onAiChat }: { onBack: () => voi
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--ink-3)', flexShrink: 0 }}>
             <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)' }}>Farmoyish 112-F</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)' }}>
+            {doc ? `${doc.doc_type || 'Hujjat'} ${doc.doc_number || ''}`.trim() : 'Farmoyish 112-F'}
+          </span>
         </div>
+
+        {loadingDoc && (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <p style={{ fontSize: 13, color: 'var(--ink-3)' }}>Yuklanmoqda...</p>
+          </div>
+        )}
 
         {/* Title row */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, marginBottom: 16 }}>
@@ -476,7 +513,7 @@ export default function DocumentDetail({ onBack, onAiChat }: { onBack: () => voi
             fontFamily: 'var(--sans)', fontSize: 26, fontWeight: 600,
             color: 'var(--ink)', margin: 0, lineHeight: 1.3,
           }}>
-            «Yashil makon» loyihasi doirasida ko'chat ekish tadbirlari to'g'risida
+            {doc?.title || '«Yashil makon» loyihasi doirasida ko\'chat ekish tadbirlari to\'g\'risida'}
           </h1>
           <div style={{ display: 'flex', gap: 10, flexShrink: 0, marginTop: 4 }}>
             <button
@@ -506,15 +543,15 @@ export default function DocumentDetail({ onBack, onAiChat }: { onBack: () => voi
 
         {/* Metadata pills */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
-          <Pill>Farmoyish</Pill>
+          <Pill>{doc?.doc_type || 'Farmoyish'}</Pill>
           <Pill color="var(--ink-2)" bg="var(--badge-bg)">
-            <Mono size={12} color="var(--ink-2)">112-F</Mono>
+            <Mono size={12} color="var(--ink-2)">{doc?.doc_number || '112-F'}</Mono>
           </Pill>
           <Pill color="var(--ink-2)" bg="var(--badge-bg)">
-            <Mono size={12} color="var(--ink-2)">14.03.2025</Mono>
+            <Mono size={12} color="var(--ink-2)">{doc?.date ? new Date(doc.date).toLocaleDateString('uz-Latn') : '14.03.2025'}</Mono>
           </Pill>
           <Pill color="var(--ink-2)" bg="var(--badge-bg)" border="var(--hairline)">
-            Toshkent shahar hokimligi
+            {doc?.org || 'Toshkent shahar hokimligi'}
           </Pill>
           <span style={{
             display: 'inline-flex', alignItems: 'center',
@@ -559,8 +596,8 @@ export default function DocumentDetail({ onBack, onAiChat }: { onBack: () => voi
               ))}
             </div>
 
-            {tab === 'ai' && <AiTab />}
-            {tab === 'text' && <TextTab />}
+            {tab === 'ai' && <AiTab doc={doc} />}
+            {tab === 'text' && <TextTab doc={doc} />}
             {tab === 'similar' && <SimilarTab />}
           </div>
 

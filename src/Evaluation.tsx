@@ -203,7 +203,7 @@ function PrecAtKChart() {
               background: 'var(--surface)', border: '1px solid var(--hairline)',
               borderRadius: 4, boxShadow: '0 2px 8px rgba(10,29,58,0.1)',
             }}
-            formatter={(val: number) => val.toFixed(2)}
+            formatter={(val: any) => typeof val === 'number' ? val.toFixed(2) : val}
           />
           {CHART_LINES.map(l => (
             <Line
@@ -304,8 +304,8 @@ function PrecisionLatencyChart() {
               background: 'var(--surface)', border: '1px solid var(--hairline)',
               borderRadius: 4,
             }}
-            formatter={(val: number, name: string) => [
-              name === 'precision' ? val.toFixed(2) : `${val} ms`,
+            formatter={(val: any, name: any) => [
+              name === 'precision' ? Number(val).toFixed(2) : `${val} ms`,
               name === 'precision' ? 'Precision@5' : 'Kechikish',
             ]}
           />

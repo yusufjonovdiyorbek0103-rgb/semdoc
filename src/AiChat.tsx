@@ -613,7 +613,7 @@ function InputArea({ onSubmit, disabled }: { onSubmit: (text: string) => void; d
         fontFamily: 'var(--sans)', fontSize: 11, color: 'var(--ink-3)',
         margin: '8px 0 0', lineHeight: 1.4,
       }}>
-        Gemini 2.0 Flash · Supabase pgvector
+        Gemini 3.6 Flash · Supabase pgvector
       </p>
     </div>
   )

@@ -339,7 +339,11 @@ function LocalityCard() {
 
 // ── Filter row ────────────────────────────────────────────────────────────────
 
-function FilterRow() {
+function FilterRow({ filterUser, setFilterUser, filterAction, setFilterAction, onExport }: {
+  filterUser: string; setFilterUser: (v: string) => void
+  filterAction: string; setFilterAction: (v: string) => void
+  onExport: () => void
+}) {
   return (
     <div style={{
       background: 'var(--surface)', border: '1px solid var(--hairline)',
@@ -347,69 +351,56 @@ function FilterRow() {
       display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' as const,
       marginBottom: 18,
     }}>
-      {[
-        {
-          label: 'Foydalanuvchi',
-          options: ['Barchasi', 'a.karimov', 'n.yusupova', 'b.toshmatov', 'm.ergasheva', 's.nazarov'],
-        },
-        {
-          label: 'Harakat turi',
-          options: ['Barchasi', 'Kirish', 'Qidiruv', "Hujjat ko'rish", 'Yuklash', 'Tasdiqlash', "Sozlama o'zgarishi"],
-        },
-        {
-          label: 'Maxfiylik darajasi',
-          options: ['Barchasi', 'Ochiq', 'Xizmat uchun', 'Maxfiy'],
-        },
-      ].map(({ label, options }) => (
-        <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500, color: 'var(--ink-2)' }}>
-            {label}
-          </label>
-          <select style={{
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <label style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500, color: 'var(--ink-2)' }}>
+          Foydalanuvchi
+        </label>
+        <select
+          value={filterUser}
+          onChange={e => setFilterUser(e.target.value)}
+          style={{
             height: 32, background: 'var(--background)',
             border: '1px solid var(--hairline)', borderRadius: 4,
             color: 'var(--ink)', fontSize: 13, padding: '0 10px',
             fontFamily: 'var(--sans)', minWidth: 160, cursor: 'pointer',
-          }}>
-            {options.map(o => <option key={o}>{o}</option>)}
-          </select>
-        </div>
-      ))}
+          }}
+        >
+          {['Barchasi', 'a.karimov', 'n.yusupova', 'b.toshmatov', 'm.ergasheva', 's.nazarov', 'admin'].map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
 
-      {/* Date range */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <label style={{ fontFamily: 'var(--sans)', fontSize: 12, fontWeight: 500, color: 'var(--ink-2)' }}>
-          Sana oralig'i
+          Harakat turi
         </label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <input type="date" defaultValue="2026-08-08" style={{
+        <select
+          value={filterAction}
+          onChange={e => setFilterAction(e.target.value)}
+          style={{
             height: 32, background: 'var(--background)',
             border: '1px solid var(--hairline)', borderRadius: 4,
-            color: 'var(--ink)', fontSize: 12, padding: '0 8px',
-            fontFamily: 'var(--sans)',
-          }} />
-          <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>—</span>
-          <input type="date" defaultValue="2026-08-08" style={{
-            height: 32, background: 'var(--background)',
-            border: '1px solid var(--hairline)', borderRadius: 4,
-            color: 'var(--ink)', fontSize: 12, padding: '0 8px',
-            fontFamily: 'var(--sans)',
-          }} />
-        </div>
+            color: 'var(--ink)', fontSize: 13, padding: '0 10px',
+            fontFamily: 'var(--sans)', minWidth: 160, cursor: 'pointer',
+          }}
+        >
+          {['Barchasi', 'Kirish', 'Qidiruv', "Hujjat ko'rish", 'Yuklash', 'Tasdiqlash', "Sozlama o'zgarishi"].map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </div>
 
       <div style={{ flex: 1 }} />
 
       {/* Export */}
-      <button style={{
-        fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500,
-        color: 'var(--ink)', background: 'var(--surface)',
-        border: '1px solid var(--hairline)', borderRadius: 4,
-        padding: '0 16px', height: 32, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 7,
-        transition: 'background 0.12s, border-color 0.12s',
-        alignSelf: 'flex-end',
-      }}
+      <button
+        onClick={onExport}
+        style={{
+          fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500,
+          color: 'var(--ink)', background: 'var(--surface)',
+          border: '1px solid var(--hairline)', borderRadius: 4,
+          padding: '0 16px', height: 32, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 7,
+          transition: 'background 0.12s, border-color 0.12s',
+          alignSelf: 'flex-end',
+        }}
         onMouseEnter={e => { e.currentTarget.style.background = '#F0F3F7'; e.currentTarget.style.borderColor = '#C8D0DA' }}
         onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--hairline)' }}
       >
@@ -426,8 +417,10 @@ function FilterRow() {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function AuditLog({ onNav }: { onNav?: (s: string) => void }) {
-  const [rows, setRows] = useState<AuditRow[]>([])
+  const [allRows, setAllRows] = useState<AuditRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [filterUser, setFilterUser] = useState('Barchasi')
+  const [filterAction, setFilterAction] = useState('Barchasi')
 
   useEffect(() => {
     getAuditLog(100).then(data => {
@@ -437,16 +430,36 @@ export default function AuditLog({ onNav }: { onNav?: (s: string) => void }) {
         role: 'Admin',
         action: r.action || '—',
         object: r.details?.file_name || r.details?.query || r.entity_type || '—',
-        ip: '—',
+        ip: IP_MAP[r.user_email] || '—',
         ok: true,
       }))
-      setRows(mapped.length > 0 ? mapped : FALLBACK_ROWS)
+      setAllRows(mapped.length > 0 ? mapped : FALLBACK_ROWS)
       setLoading(false)
     }).catch(() => {
-      setRows(FALLBACK_ROWS)
+      setAllRows(FALLBACK_ROWS)
       setLoading(false)
     })
   }, [])
+
+  const rows = allRows.filter(r => {
+    if (filterUser !== 'Barchasi' && r.user !== filterUser) return false
+    if (filterAction !== 'Barchasi' && r.action !== filterAction) return false
+    return true
+  })
+
+  const exportCsv = () => {
+    const header = COL_HEADS.join(',')
+    const body = rows.map(r =>
+      [r.time, r.user, r.role, r.action, `"${r.object}"`, r.ip, r.ok ? 'Muvaffaqiyatli' : 'Rad etildi'].join(',')
+    ).join('\n')
+    const blob = new Blob([header + '\n' + body], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'audit_log.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div style={{ background: 'var(--canvas)' }}>
@@ -471,7 +484,13 @@ export default function AuditLog({ onNav }: { onNav?: (s: string) => void }) {
           </p>
         </div>
 
-        <FilterRow />
+        <FilterRow
+          filterUser={filterUser}
+          setFilterUser={setFilterUser}
+          filterAction={filterAction}
+          setFilterAction={setFilterAction}
+          onExport={exportCsv}
+        />
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>

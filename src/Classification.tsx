@@ -202,10 +202,14 @@ function DocCardItem({
   card,
   onConfirm,
   onReject,
+  onUndo,
+  onChangeField,
 }: {
   card: DocCard & { status: CardStatus; type: string; topic: string; dept: string }
   onConfirm: (id: string) => void
   onReject: (id: string) => void
+  onUndo: (id: string) => void
+  onChangeField: (id: string, field: 'type' | 'topic' | 'dept', value: string) => void
 }) {
   const { confidence, status } = card
   const color = confColor(confidence)
@@ -277,7 +281,7 @@ function DocCardItem({
           label="Taklif etilgan tur"
           value={card.type}
           options={TYPE_OPTIONS}
-          onChange={() => {}}
+          onChange={v => onChangeField(card.id, 'type', v)}
           placeholder="Aniqlanmadi"
           disabled={done}
         />
@@ -285,14 +289,14 @@ function DocCardItem({
           label="Mavzu toifasi"
           value={card.topic}
           options={TOPIC_OPTIONS}
-          onChange={() => {}}
+          onChange={v => onChangeField(card.id, 'topic', v)}
           disabled={done}
         />
         <SuggestionField
           label="Mas'ul bo'lim"
           value={card.dept}
           options={DEPT_OPTIONS}
-          onChange={() => {}}
+          onChange={v => onChangeField(card.id, 'dept', v)}
           disabled={done}
         />
       </div>
@@ -324,7 +328,7 @@ function DocCardItem({
       {done && (
         <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={() => {}}
+            onClick={() => onUndo(card.id)}
             style={{
               fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-2)',
               background: 'none', border: 'none', padding: 0, cursor: 'pointer',
@@ -448,6 +452,12 @@ export default function Classification({ onNav }: { onNav?: (s: string) => void 
   const reject = (id: string) =>
     setCards(cs => cs.map(c => c.id === id ? { ...c, status: 'rejected' } : c))
 
+  const undo = (id: string) =>
+    setCards(cs => cs.map(c => c.id === id ? { ...c, status: 'pending' } : c))
+
+  const changeField = (id: string, field: 'type' | 'topic' | 'dept', value: string) =>
+    setCards(cs => cs.map(c => c.id === id ? { ...c, [field]: value } : c))
+
   const confirmAll = () =>
     setCards(cs => cs.map(c =>
       c.status === 'pending' && c.confidence >= 85 && !c.lowConf
@@ -552,6 +562,8 @@ export default function Classification({ onNav }: { onNav?: (s: string) => void 
                 card={card}
                 onConfirm={confirm}
                 onReject={reject}
+                onUndo={undo}
+                onChangeField={changeField}
               />
             ))
           )}
